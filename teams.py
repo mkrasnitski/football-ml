@@ -4,7 +4,26 @@ from dataclasses import dataclass
 @dataclass
 class Team:
 	name: str
-	stats: pd.DataFrame = pd.DataFrame()
+
+	def __post_init__(self):
+		self.offence_lst = []
+		self.defence_lst = []
+		self.raw_offence = pd.DataFrame()
+		self.raw_defence = pd.DataFrame()
+
+	def calculate_stats(self):
+		stats = pd.Series()
+		for side in ['offence', 'defence']:
+			raw = getattr(self, f'raw_{side}')
+			stat_name = side[:3]
+			stats[f'{stat_name}_Avg_Score'] = raw['Score'].mean()
+			stats[f'{stat_name}_Max_Score'] = raw['Score'].max()
+			stats[f'{stat_name}_Min_Score'] = raw['Score'].min()
+			stats[f'{stat_name}_Avg_Yards'] = raw['Yards'].mean()
+			stats[f'{stat_name}_Avg_Turnovers'] = raw['Turnovers'].mean()
+			stats[f'{stat_name}_Avg_Sacks'] = raw['Sacks'].mean()
+			stats[f'{stat_name}_Avg_TDCR'] = raw['Third Down Rate'].mean()
+		return stats
 
 	def __hash__(self):
 		return hash(self.name)
